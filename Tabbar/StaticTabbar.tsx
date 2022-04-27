@@ -23,6 +23,8 @@ interface Props {
   containerWidth?: number;
   defaultActiveTabIndex?: number;
   transitionSpeed?: number;
+  activeIndex: number;
+  setActiveIndex: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default class StaticTabbar extends React.PureComponent<Props> {
@@ -30,24 +32,22 @@ export default class StaticTabbar extends React.PureComponent<Props> {
   transitionDuration = this.props.transitionSpeed
     ? this.props.transitionSpeed
     : null;
-  activeTabIndex = this.props.defaultActiveTabIndex
-    ? (this.props.defaultActiveTabIndex > this.props.tabs.length
-      ? 0
-      : this.props.defaultActiveTabIndex)
-    : 0;
+
   constructor(props: Props) {
     super(props);
-    const { tabs } = this.props;
-    const { activeTabIndex } = this;
+    const { tabs, activeIndex, setActiveIndex } = this.props;
 
     this.values = tabs?.map(
-      (tab, index) => new Animated.Value(index === activeTabIndex ? 1 : 0)
+      (tab, index) => new Animated.Value(index === activeIndex ? 1 : 0)
     );
   }
 
   componentDidMount() {
-    const { activeTabIndex } = this;
-    this.onPress(activeTabIndex, true);
+    this.onPress(this.props.activeIndex, true);
+  }
+
+  componentDidUpdate() {
+    this.onPress(this.props.activeIndex, true);
   }
 
   onPress = (index: number, noAnimation: boolean = false) => {
@@ -79,6 +79,7 @@ export default class StaticTabbar extends React.PureComponent<Props> {
         }),
       ]).start();
       prevIndex = index;
+      this.props.setActiveIndex(index);
     }
   };
 
