@@ -49,7 +49,7 @@ const getPath = (tabWidth: number, width: number) => {
     { x: 0, y: height },
     { x: 0, y: 0 },
   ]);
- 
+
   return ` ${tab} `;
 };
 
@@ -74,6 +74,8 @@ interface Props {
   onTabChange?: (tab: TabsType) => void;
   defaultActiveTabIndex?: number;
   transitionSpeed?: number;
+  activeIndex: number;
+  setActiveIndex: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default class Tabbar extends React.PureComponent<Props> {
@@ -90,6 +92,8 @@ export default class Tabbar extends React.PureComponent<Props> {
       containerTopLeftRadius,
       containerBottomLeftRadius,
       containerBottomRightRadius,
+      activeIndex,
+      setActiveIndex,
     } = this.props;
     let CustomWidth = containerWidth ? containerWidth : width;
     const { value } = this;
