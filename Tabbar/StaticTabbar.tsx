@@ -47,7 +47,7 @@ export default class StaticTabbar extends React.PureComponent<Props> {
   }
 
   componentDidUpdate() {
-    this.onPress(this.props.activeIndex, true);
+    this.onPress(this.props.activeIndex, false);
   }
 
   onPress = (index: number, noAnimation: boolean = false) => {
