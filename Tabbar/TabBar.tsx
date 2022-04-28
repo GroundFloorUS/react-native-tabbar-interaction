@@ -9,13 +9,15 @@ import {
   TextStyle,
 } from "react-native";
 import * as shape from "d3-shape";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Path, Mask, Rect, Defs, G } from "react-native-svg";
 import StaticTabbar from "./StaticTabbar";
 
 const AnimatedSvg = Animated.createAnimatedComponent(Svg);
 let { width } = Dimensions.get("window");
 
-const height = 65;
+const height = 49;
+const scoopWidth = 38;
+const scoopDepth = 26;
 
 const getPath = (tabWidth: number, width: number) => {
   const left = shape
@@ -31,12 +33,12 @@ const getPath = (tabWidth: number, width: number) => {
     .y((d) => d.y)
     .curve(shape.curveBasis)([
     { x: width + tabWidth / 2 - 100, y: 0 },
-    { x: width + tabWidth / 2 - 65 + -35, y: 0 },
-    { x: width + tabWidth / 2 - 50 + 10, y: -6 },
-    { x: width + tabWidth / 2 - 50 + 15, y: height - 14 },
-    { x: width + tabWidth / 2 + 50 - 15, y: height - 14 },
-    { x: width + tabWidth / 2 + 50 - 10, y: -6 },
-    { x: width + tabWidth / 2 + 65 - -35, y: 0 },
+    { x: width + tabWidth / 2 - height + -30, y: 0 },
+    { x: width + tabWidth / 2 - scoopWidth + 10, y: -6 },
+    { x: width + tabWidth / 2 - scoopWidth + 15, y: scoopDepth },
+    { x: width + tabWidth / 2 + scoopWidth - 15, y: scoopDepth },
+    { x: width + tabWidth / 2 + scoopWidth - 10, y: -6 },
+    { x: width + tabWidth / 2 + height - -30, y: 0 },
     { x: width + tabWidth / 2 + 100, y: 0 },
   ]);
   const right = shape
@@ -74,8 +76,6 @@ interface Props {
   onTabChange?: (tab: TabsType) => void;
   defaultActiveTabIndex?: number;
   transitionSpeed?: number;
-  activeIndex: number;
-  setActiveIndex: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default class Tabbar extends React.PureComponent<Props> {
@@ -92,25 +92,23 @@ export default class Tabbar extends React.PureComponent<Props> {
       containerTopLeftRadius,
       containerBottomLeftRadius,
       containerBottomRightRadius,
-      activeIndex,
-      setActiveIndex,
     } = this.props;
-    let CustomWidth = containerWidth ? containerWidth : width;
+    let customWidth = containerWidth ? containerWidth : width;
     const { value } = this;
     const translateX = value.interpolate({
-      inputRange: [0, CustomWidth],
-      outputRange: [-CustomWidth, 0],
+      inputRange: [0, customWidth],
+      outputRange: [-customWidth, 0],
     });
     let tabBarBackgroundColor = tabBarBackground
       ? tabBarBackground
       : "transparent";
     const tabWidth: number | void | string =
       tabs.length > 0
-        ? CustomWidth / tabs.length
+        ? customWidth / tabs.length
         : console.error("please add tab data");
     let d;
     if (typeof tabWidth == "number") {
-      d = getPath(tabWidth, CustomWidth);
+      d = getPath(tabWidth, customWidth);
     }
 
     let borderTopRightRadius = containerTopRightRadius
@@ -130,9 +128,6 @@ export default class Tabbar extends React.PureComponent<Props> {
         <>
           <View
             style={{
-              backgroundColor: tabBarContainerBackground
-                ? tabBarContainerBackground
-                : "#fff",
               position: "absolute",
               bottom: containerBottomSpace ? containerBottomSpace : 0,
               alignSelf: "center",
@@ -145,10 +140,8 @@ export default class Tabbar extends React.PureComponent<Props> {
             <View
               {...{
                 height,
-                width: CustomWidth,
-                backgroundColor: tabBarContainerBackground
-                  ? tabBarContainerBackground
-                  : "#fff",
+                width: customWidth,
+
                 alignSelf: "center",
                 borderTopRightRadius,
                 borderTopLeftRadius,
@@ -157,7 +150,7 @@ export default class Tabbar extends React.PureComponent<Props> {
               }}
             >
               <AnimatedSvg
-                width={CustomWidth * 2}
+                width={customWidth * 2}
                 {...{ height }}
                 style={{
                   transform: [{ translateX }],
@@ -165,10 +158,29 @@ export default class Tabbar extends React.PureComponent<Props> {
                   alignItems: "center",
                 }}
               >
-                <Path fill={tabBarBackgroundColor} {...{ d }} />
+                <Defs>
+                  <Mask id="cutout">
+                    <Rect
+                      fill={"white"}
+                      x={0}
+                      y={0}
+                      width={customWidth * 2}
+                      height={height}
+                    />
+                    <Path fill={"black"} {...{ d }} />
+                  </Mask>
+                </Defs>
+                <Rect
+                  mask="url(#cutout)"
+                  fill={tabBarContainerBackground}
+                  x={0}
+                  y={0}
+                  width={customWidth * 2}
+                  height={height}
+                />
               </AnimatedSvg>
               <View style={StyleSheet.absoluteFill}>
-                <StaticTabbar {...this.props} {...{ tabs, value }} />
+                <StaticTabbar {...this.props} {...{ tabs, value, height }} />
               </View>
             </View>
             <SafeAreaView
