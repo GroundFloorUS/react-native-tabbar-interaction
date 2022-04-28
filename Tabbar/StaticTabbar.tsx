@@ -25,6 +25,7 @@ interface Props {
   transitionSpeed?: number;
   activeIndex: number;
   setActiveIndex: React.Dispatch<React.SetStateAction<number>>;
+  height: number;
 }
 
 export default class StaticTabbar extends React.PureComponent<Props> {
@@ -99,10 +100,31 @@ export default class StaticTabbar extends React.PureComponent<Props> {
       styles.activeIcon,
       { backgroundColor: activeTabBackground ? activeTabBackground : "#fff" },
     ];
+    const translateX = value.interpolate({
+      inputRange: [0, customWidth],
+      outputRange: [0, customWidth],
+    });
+    const tabWidth = customWidth / tabs.length;
+    const buttonOffset = -14;
     return (
       <View style={styles.container}>
+        <Animated.View
+          style={{
+            transform: [{ translateX }],
+            position: "absolute",
+            top: buttonOffset,
+            left: 0,
+            width: tabWidth,
+            height: this.props.height,
+            justifyContent: "center",
+            alignItems: "center",
+
+            zIndex: 50,
+          }}
+        >
+          <View style={newActiveIcon} />
+        </Animated.View>
         {tabs.map((tab, key) => {
-          const tabWidth = customWidth / tabs.length;
           const cursor = tabWidth * key;
           const opacity = value.interpolate({
             inputRange: [cursor - tabWidth, cursor, cursor + tabWidth],
@@ -123,25 +145,36 @@ export default class StaticTabbar extends React.PureComponent<Props> {
                   onTabChange && onTabChange(tab);
                 }}
               >
-                <Animated.View style={[styles.tab, { opacity, zIndex: 100 }]}>
-                  {tab.inactiveIcon}
-                  <Text style={mergeLabelStyle}>{tab.name}</Text>
-                </Animated.View>
+                <View style={[styles.tab, { width: tabWidth }]}>
+                  <Animated.View style={[{ opacity, zIndex: 100 }]}>
+                    {tab.inactiveIcon}
+                  </Animated.View>
+                  <Text style={[styles.labelStyle, labelStyle]}>
+                    {tab.name}
+                  </Text>
+                </View>
               </TouchableWithoutFeedback>
               <Animated.View
-                style={{
-                  position: "absolute",
-                  top: -8,
-                  left: tabWidth * key,
-                  width: tabWidth,
-                  height: 64,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  opacity: opacity1,
-                  zIndex: 50,
-                }}
+                style={[
+                  {
+                    transform: [{ translateX }],
+                    position: "absolute",
+                    top: buttonOffset,
+                    left: 0,
+                    width: tabWidth,
+                    height: this.props.height,
+                    justifyContent: "center",
+                    alignItems: "center",
+
+                    zIndex: 50,
+                  },
+                ]}
               >
-                <View style={newActiveIcon}>{tab.activeIcon}</View>
+                <View style={styles.activeIcon}>
+                  <Animated.View style={[{ opacity: opacity1 }]}>
+                    {tab.activeIcon}
+                  </Animated.View>
+                </View>
               </Animated.View>
             </React.Fragment>
           );
@@ -156,14 +189,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   tab: {
-    flex: 1,
-    justifyContent: "center",
+    height: "100%",
+    justifyContent: "space-between",
     alignItems: "center",
-    height: 64,
+    paddingTop: 6,
   },
   activeIcon: {
-    width: 60,
-    height: 60,
+    width: 44,
+    height: 44,
     borderRadius: 50,
     marginBottom: 30,
     justifyContent: "center",
@@ -171,8 +204,7 @@ const styles = StyleSheet.create({
   },
   labelStyle: {
     fontSize: 11,
-    fontWeight: "600",
-    // marginTop: 3,
+    marginBottom: 6,
     color: "#000",
   },
 });
