@@ -179,6 +179,16 @@ export default class StaticTabbar extends React.PureComponent<Props> {
             </React.Fragment>
           );
         })}
+        <View
+          style={{
+            position: "absolute",
+            left: tabWidth * 2,
+            top: 8,
+            bottom: 4,
+            width: 1,
+            backgroundColor: labelStyle?.backgroundColor ?? "#FFFFFF66",
+          }}
+        />
       </View>
     );
   }
